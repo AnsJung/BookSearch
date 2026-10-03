@@ -1,9 +1,19 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
 }
+
+val localConfig = Properties().apply {
+    rootProject.file("local.properties")
+        .inputStream()
+        .use { load(it) }
+}
+
+val kakaoApiKey = localConfig.getProperty("KAKAO_REST_API_KEY")
+    ?: error("local.properties에 KAKAO_REST_API_KEY를 추가해 주세요.")
 
 kotlin {
     compilerOptions {
@@ -29,6 +39,11 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        buildConfigField(
+            "String",
+            "KAKAO_REST_API_KEY",
+            "\"$kakaoApiKey\""
+        )
     }
     packaging {
         resources {
@@ -50,5 +65,6 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }

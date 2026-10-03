@@ -1,7 +1,6 @@
 package com.example.booksearch.domain.usecase
 
 import com.example.booksearch.domain.model.Book
-import com.example.booksearch.domain.model.BookSearchException
 import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.domain.repository.BookRepository
 import kotlin.coroutines.cancellation.CancellationException
@@ -13,7 +12,7 @@ import kotlin.coroutines.cancellation.CancellationException
 class SearchBooksUseCase(
     private val repository: BookRepository,
 ) {
-    @Throws(BookSearchException::class, IllegalArgumentException::class, CancellationException::class)
+    @Throws(IllegalArgumentException::class, CancellationException::class)
     suspend operator fun invoke(
         query: String,
         sort: BookSort,

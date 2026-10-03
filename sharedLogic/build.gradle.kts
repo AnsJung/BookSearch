@@ -40,6 +40,7 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.koin.core)
         }
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
@@ -52,5 +53,24 @@ kotlin {
             implementation(libs.ktor.client.mock)
             implementation(libs.kotlinx.coroutines.test)
         }
+    }
+}
+
+// 실제 카카오 서버 테스트는 명시적으로 선택한 경우에만 실행한다.
+val runKakaoIntegrationTest = providers.gradleProperty("runKakaoIntegrationTest")
+    .map { it.toBoolean() }
+    .orElse(false)
+    .get()
+
+tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
+    val integrationTest = "com.example.booksearch.data.remote.KakaoBookApiIntegrationTest"
+    if (runKakaoIntegrationTest) {
+        filter { includeTestsMatching(integrationTest) }
+        systemProperty("booksearch.projectRoot", rootProject.projectDir.absolutePath)
+        outputs.upToDateWhen { false }
+        outputs.doNotCacheIf("실제 서버 응답은 실행할 때마다 확인한다") { true }
+        testLogging.showStandardStreams = true
+    } else {
+        filter { excludeTestsMatching(integrationTest) }
     }
 }
