@@ -1,10 +1,14 @@
 package com.example.booksearch.presentation.search
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,25 +16,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.booksearch.R
 import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.presentation.model.BookSearchUiState
-import com.example.booksearch.presentation.theme.BookAccentSubtle
-import com.example.booksearch.presentation.theme.BookBackground
-import com.example.booksearch.presentation.theme.BookError
-import com.example.booksearch.presentation.theme.BookTextPrimary
-import com.example.booksearch.presentation.theme.BookTextSecondary
 import com.example.booksearch.presentation.theme.BookSearchTheme
 import com.example.booksearch.presentation.theme.PreSearchTitleStyle
 
@@ -42,12 +52,13 @@ fun BookSearchScreen(
     uiState: BookSearchUiState = remember { BookSearchUiState() },
     onQueryChanged: (String) -> Unit = {},
     onSearch: () -> Unit = {},
+    onRetry: () -> Unit = {},
     onSortChanged: (BookSort) -> Unit = {},
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BookBackground)
+            .background(MaterialTheme.colorScheme.background)
             .safeDrawingPadding(),
     ) {
         BookSearchBar(
@@ -57,17 +68,78 @@ fun BookSearchScreen(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
         )
 
-        uiState.queryErrorMessage?.let { message ->
-            Text(
-                text = message,
-                modifier = Modifier.padding(horizontal = 20.dp),
-                style = MaterialTheme.typography.labelLarge,
-                color = BookError,
+
+        when {
+            uiState.isLoading -> LoadingResult()
+            uiState.errorMessage != null -> SearchError(uiState.errorMessage, onRetry)
+            uiState.submittedQuery == null -> PreSearchIntro()
+            uiState.books.isEmpty() -> EmptyResult()
+            else -> { // 리스트 스크린 및 정렬 결과개수표시
+
+            }
+        }
+    }
+}
+
+@Composable
+private fun LoadingResult() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun SearchError(message: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 126.dp, start = 36.dp, end = 36.dp)
+            .padding(vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(52.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_search_intro),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
             )
         }
-
-        if (uiState.submittedQuery == null && !uiState.isLoading) {
-            PreSearchIntro()
+        Text(
+            text = "도서를 불러오지 못했어요",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.Normal,
+                lineHeight = 20.sp,
+            ),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        OutlinedButton(
+            onClick = onRetry,
+            modifier = Modifier.width(160.dp).height(48.dp),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+            ),
+            contentPadding = PaddingValues(horizontal = 16.dp),
+        ) {
+            Text("다시 시도", style = MaterialTheme.typography.labelLarge)
         }
     }
 }
@@ -84,7 +156,7 @@ private fun PreSearchIntro() {
         Box(
             modifier = Modifier
                 .size(52.dp)
-                .background(BookAccentSubtle, CircleShape),
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Image(
@@ -96,22 +168,99 @@ private fun PreSearchIntro() {
         Text(
             text = "어떤 책을 찾고 있나요?",
             style = PreSearchTitleStyle,
-            color = BookTextPrimary,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
         Text(
             text = "책 제목으로 검색해 보세요.",
             style = MaterialTheme.typography.bodyMedium,
-            color = BookTextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF7F8FA)
 @Composable
-private fun BookSearchScreenPreview() {
+private fun EmptyResult() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 118.dp, start = 36.dp, end = 36.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.ic_search_intro),
+                contentDescription = null,
+                modifier = Modifier.size(26.dp),
+            )
+        }
+        Text(
+            text = "검색 결과가 없어요",
+            style = PreSearchTitleStyle,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = "검색어를 바꾸거나 책 제목을 확인해 보세요.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Preview(name = "검색 전", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun PreSearchBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen()
+    }
+}
+
+@Preview(name = "검색 중", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun LoadingBookSearchScreenPreview() {
+    BookSearchTheme {
+        BookSearchScreen(
+            uiState = BookSearchUiState(
+                query = "코틀린",
+                submittedQuery = "코틀린",
+                isLoading = true,
+            ),
+        )
+    }
+}
+
+@Preview(name = "검색 오류", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun ErrorBookSearchScreenPreview() {
+    BookSearchTheme {
+        BookSearchScreen(
+            uiState = BookSearchUiState(
+                query = "코틀린",
+                submittedQuery = "코틀린",
+                errorMessage = "인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+            ),
+        )
+    }
+}
+
+@Preview(name = "검색 결과 없음", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun EmptyBookSearchScreenPreview() {
+    BookSearchTheme {
+        BookSearchScreen(
+            uiState = BookSearchUiState(
+                query = "없는 책",
+                submittedQuery = "없는 책",
+            ),
+        )
     }
 }

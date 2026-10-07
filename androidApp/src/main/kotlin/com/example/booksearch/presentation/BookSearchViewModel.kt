@@ -60,6 +60,14 @@ class BookSearchViewModel(
         )
     }
 
+    /** 실패한 검색 조건으로 다시 요청한다. */
+    fun retry() {
+        val state = _uiState.value
+        if (state.isLoading || state.errorMessage == null) return
+        val submittedQuery = state.submittedQuery ?: return
+        executeSearch(query = submittedQuery, sort = state.sort)
+    }
+
     /**
      * 도서 검색을 수행하는 함수
      */
@@ -104,7 +112,7 @@ class BookSearchViewModel(
                 ensureActive()
                 _uiState.update {
                     it.copy(
-                        errorMessage = "도서 검색에 실패했어요."
+                        errorMessage = "잠시 후 다시 시도해 주세요."
                     )
                 }
             } finally {

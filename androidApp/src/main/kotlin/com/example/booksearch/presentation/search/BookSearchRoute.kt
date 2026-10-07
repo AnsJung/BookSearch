@@ -16,6 +16,7 @@ fun BookSearchRoute(
         uiState = uiState,
         onQueryChanged = viewModel::onQueryChanged,
         onSearch = viewModel::search,
+        onRetry = viewModel::retry,
         onSortChanged = viewModel::onSortChanged,
     )
 }
