@@ -12,4 +12,10 @@ fun BookSearchRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    BookSearchScreen(
+        uiState = uiState,
+        onQueryChanged = viewModel::onQueryChanged,
+        onSearch = viewModel::search,
+        onSortChanged = viewModel::onSortChanged,
+    )
 }
