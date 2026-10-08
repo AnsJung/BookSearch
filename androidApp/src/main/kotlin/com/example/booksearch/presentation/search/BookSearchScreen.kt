@@ -2,14 +2,11 @@ package com.example.booksearch.presentation.search
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -28,10 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -39,7 +31,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.booksearch.R
+import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSort
+import com.example.booksearch.presentation.dialog.AppMessageDialog
 import com.example.booksearch.presentation.model.BookSearchUiState
 import com.example.booksearch.presentation.theme.BookSearchTheme
 import com.example.booksearch.presentation.theme.PreSearchTitleStyle
@@ -54,6 +48,7 @@ fun BookSearchScreen(
     onSearch: () -> Unit = {},
     onRetry: () -> Unit = {},
     onSortChanged: (BookSort) -> Unit = {},
+    onQueryErrorDismiss: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -68,29 +63,35 @@ fun BookSearchScreen(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
         )
 
-
         when {
-            uiState.isLoading -> LoadingResult()
+            uiState.isLoading -> SearchLoadingSkeleton(
+                query = uiState.submittedQuery ?: uiState.query.trim(),
+            )
             uiState.errorMessage != null -> SearchError(uiState.errorMessage, onRetry)
             uiState.submittedQuery == null -> PreSearchIntro()
             uiState.books.isEmpty() -> EmptyResult()
-            else -> { // 리스트 스크린 및 정렬 결과개수표시
-
+            else -> {
+                SearchResult(
+                    query = uiState.submittedQuery,
+                    books = uiState.books,
+                    sort = uiState.sort,
+                    onSortChanged = onSortChanged,
+                )
             }
         }
     }
-}
 
-@Composable
-private fun LoadingResult() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularProgressIndicator()
+    uiState.queryErrorMessage?.let { message ->
+        AppMessageDialog(
+            message = message,
+            onDismiss = onQueryErrorDismiss,
+        )
     }
 }
 
+/**
+ * 검색 오류 화면
+ */
 @Composable
 private fun SearchError(message: String, onRetry: () -> Unit) {
     Column(
@@ -144,6 +145,9 @@ private fun SearchError(message: String, onRetry: () -> Unit) {
     }
 }
 
+/**
+ * 검색 전 화면
+ */
 @Composable
 private fun PreSearchIntro() {
     Column(
@@ -180,6 +184,9 @@ private fun PreSearchIntro() {
     }
 }
 
+/**
+ * 검색 결과 없음 화면
+ */
 @Composable
 private fun EmptyResult() {
     Column(
@@ -230,8 +237,8 @@ private fun LoadingBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen(
             uiState = BookSearchUiState(
-                query = "코틀린",
-                submittedQuery = "코틀린",
+                query = "바다의 기억",
+                submittedQuery = "바다의 기억",
                 isLoading = true,
             ),
         )
@@ -240,7 +247,7 @@ private fun LoadingBookSearchScreenPreview() {
 
 @Preview(name = "검색 오류", showBackground = true, backgroundColor = 0xFFF7F8FA)
 @Composable
-private fun ErrorBookSearchScreenPreview() {
+private fun SearchErrorBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen(
             uiState = BookSearchUiState(
@@ -248,6 +255,16 @@ private fun ErrorBookSearchScreenPreview() {
                 submittedQuery = "코틀린",
                 errorMessage = "인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
             ),
+        )
+    }
+}
+
+@Preview(name = "검색어 입력 안내", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun QueryErrorBookSearchScreenPreview() {
+    BookSearchTheme {
+        BookSearchScreen(
+            uiState = BookSearchUiState(queryErrorMessage = "검색어를 입력해주세요."),
         )
     }
 }
@@ -260,6 +277,35 @@ private fun EmptyBookSearchScreenPreview() {
             uiState = BookSearchUiState(
                 query = "없는 책",
                 submittedQuery = "없는 책",
+            ),
+        )
+    }
+}
+
+@Preview(name = "검색 결과", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun SearchResultBookSearchScreenPreview() {
+    BookSearchTheme {
+        BookSearchScreen(
+            uiState = BookSearchUiState(
+                query = "바다의 기억",
+                submittedQuery = "바다의 기억",
+                books = listOf(
+                    Book(
+                        title = "바다의 기억을 엮는 사람들",
+                        contents = "",
+                        url = "",
+                        isbn = "",
+                        datetime = "",
+                        authors = listOf("서은채", "윤해솔", "문지안"),
+                        publisher = "여름의서가",
+                        translators = emptyList(),
+                        price = null,
+                        salePrice = null,
+                        thumbnail = "",
+                        status = "",
+                    ),
+                ),
             ),
         )
     }

@@ -36,6 +36,11 @@ class BookSearchViewModel(
         }
     }
 
+    /** 검색어 입력 안내 팝업을 닫는다. */
+    fun dismissQueryError() {
+        _uiState.update { it.copy(queryErrorMessage = null) }
+    }
+
     /**
      * 정렬 방식 변경 시 호출되는 함수
      */

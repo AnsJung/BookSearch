@@ -18,5 +18,6 @@ fun BookSearchRoute(
         onSearch = viewModel::search,
         onRetry = viewModel::retry,
         onSortChanged = viewModel::onSortChanged,
+        onQueryErrorDismiss = viewModel::dismissQueryError,
     )
 }

@@ -12,6 +12,7 @@ private val BookLightColorScheme = lightColorScheme(
     background = BookBackground,
     onBackground = BookTextPrimary,
     surface = BookSurface,
+    surfaceVariant = BookDisabledContainer,
     onSurface = BookTextPrimary,
     onSurfaceVariant = BookTextSecondary,
     outline = BookBorder,
