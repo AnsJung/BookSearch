@@ -35,8 +35,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.booksearch.R
-import com.example.booksearch.presentation.theme.BookDisabledContainer
-import com.example.booksearch.presentation.theme.BookDisabledContent
 import com.example.booksearch.presentation.theme.BookSearchTheme
 
 /**
@@ -117,7 +115,6 @@ fun BookSearchBar(
         }
         Button(
             onClick = onSearch,
-            enabled = query.isNotBlank(),
             modifier = Modifier
                 .width(62.dp)
                 .height(52.dp),
@@ -126,8 +123,6 @@ fun BookSearchBar(
             colors = ButtonDefaults.buttonColors(
                 containerColor = colors.primary,
                 contentColor = colors.onPrimary,
-                disabledContainerColor = BookDisabledContainer,
-                disabledContentColor = BookDisabledContent,
             ),
         ) {
             Text(text = "검색", style = MaterialTheme.typography.labelLarge)

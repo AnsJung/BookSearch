@@ -3,6 +3,8 @@ package com.example.booksearch.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.booksearch.domain.model.BookSort
+import com.example.booksearch.domain.model.BookSearchException
+import com.example.booksearch.domain.model.BookSearchFailure
 import com.example.booksearch.domain.usecase.SearchBooksUseCase
 import com.example.booksearch.presentation.model.BookSearchUiState
 import kotlin.coroutines.cancellation.CancellationException
@@ -68,7 +70,7 @@ class BookSearchViewModel(
     /** 실패한 검색 조건으로 다시 요청한다. */
     fun retry() {
         val state = _uiState.value
-        if (state.isLoading || state.errorMessage == null) return
+        if (state.isLoading || !state.canRetry) return
         val submittedQuery = state.submittedQuery ?: return
         executeSearch(query = submittedQuery, sort = state.sort)
     }
@@ -99,6 +101,7 @@ class BookSearchViewModel(
                 books = emptyList(),
                 isLoading = true,
                 errorMessage = null,
+                canRetry = false,
                 queryErrorMessage = null
             )
         }
@@ -115,9 +118,11 @@ class BookSearchViewModel(
                 throw e
             } catch (e: Exception) {
                 ensureActive()
+                val failure = (e as? BookSearchException)?.failure ?: BookSearchFailure.UNKNOWN
                 _uiState.update {
                     it.copy(
-                        errorMessage = "잠시 후 다시 시도해 주세요."
+                        errorMessage = failure.userMessage(),
+                        canRetry = failure.canRetry(),
                     )
                 }
             } finally {
@@ -131,4 +136,20 @@ class BookSearchViewModel(
             }
         }
     }
+}
+
+private fun BookSearchFailure.userMessage(): String = when (this) {
+    BookSearchFailure.NETWORK -> "인터넷 연결을 확인한 뒤 다시 시도해 주세요."
+    BookSearchFailure.TIMEOUT -> "응답이 지연되고 있어요. 잠시 후 다시 시도해 주세요."
+    BookSearchFailure.SERVER -> "서비스에 일시적인 문제가 있어요. 잠시 후 다시 시도해 주세요."
+    BookSearchFailure.AUTHENTICATION, BookSearchFailure.PERMISSION_DENIED -> "현재 도서 검색 서비스를 이용할 수 없어요."
+    BookSearchFailure.RATE_LIMITED -> "검색 이용량이 많아 잠시 후 다시 이용해 주세요."
+    BookSearchFailure.INVALID_REQUEST -> "검색 요청을 처리할 수 없어요."
+    BookSearchFailure.RESPONSE_PARSING -> "도서 정보를 처리하지 못했어요."
+    BookSearchFailure.UNKNOWN -> "잠시 후 다시 시도해 주세요."
+}
+
+private fun BookSearchFailure.canRetry(): Boolean = when (this) {
+    BookSearchFailure.NETWORK, BookSearchFailure.TIMEOUT, BookSearchFailure.SERVER -> true
+    else -> false
 }

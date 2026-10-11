@@ -20,6 +20,7 @@ internal expect fun createBookHttpClient(apiKey:String): HttpClient
  * 도서 API용 JSON 응답 변환과 요청 타임아웃을 설정한다.
  */
 internal fun HttpClientConfig<*>.configureBookClient(apiKey : String) {
+    expectSuccess = true
     install(ContentNegotiation) {
         json(Json {
             ignoreUnknownKeys = true

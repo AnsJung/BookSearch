@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -36,7 +38,7 @@ import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.presentation.dialog.AppMessageDialog
 import com.example.booksearch.presentation.model.BookSearchUiState
 import com.example.booksearch.presentation.theme.BookSearchTheme
-import com.example.booksearch.presentation.theme.PreSearchTitleStyle
+import com.example.booksearch.presentation.theme.preSearchTitle
 
 /**
  * 메인 화면 컴포저블
@@ -49,6 +51,8 @@ fun BookSearchScreen(
     onRetry: () -> Unit = {},
     onSortChanged: (BookSort) -> Unit = {},
     onQueryErrorDismiss: () -> Unit = {},
+    onBookSelected: (Int) -> Unit = {},
+    resultListState: LazyListState = rememberLazyListState(),
 ) {
     Column(
         modifier = Modifier
@@ -67,7 +71,11 @@ fun BookSearchScreen(
             uiState.isLoading -> SearchLoadingSkeleton(
                 query = uiState.submittedQuery ?: uiState.query.trim(),
             )
-            uiState.errorMessage != null -> SearchError(uiState.errorMessage, onRetry)
+            uiState.errorMessage != null -> SearchError(
+                message = uiState.errorMessage,
+                canRetry = uiState.canRetry,
+                onRetry = onRetry,
+            )
             uiState.submittedQuery == null -> PreSearchIntro()
             uiState.books.isEmpty() -> EmptyResult()
             else -> {
@@ -76,6 +84,8 @@ fun BookSearchScreen(
                     books = uiState.books,
                     sort = uiState.sort,
                     onSortChanged = onSortChanged,
+                    onBookSelected = onBookSelected,
+                    listState = resultListState,
                 )
             }
         }
@@ -93,7 +103,7 @@ fun BookSearchScreen(
  * 검색 오류 화면
  */
 @Composable
-private fun SearchError(message: String, onRetry: () -> Unit) {
+private fun SearchError(message: String, canRetry: Boolean, onRetry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -129,18 +139,20 @@ private fun SearchError(message: String, onRetry: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        OutlinedButton(
-            onClick = onRetry,
-            modifier = Modifier.width(160.dp).height(48.dp),
-            shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary,
-            ),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-        ) {
-            Text("다시 시도", style = MaterialTheme.typography.labelLarge)
+        if (canRetry) {
+            OutlinedButton(
+                onClick = onRetry,
+                modifier = Modifier.width(160.dp).height(48.dp),
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                ),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+            ) {
+                Text("다시 시도", style = MaterialTheme.typography.labelLarge)
+            }
         }
     }
 }
@@ -171,7 +183,7 @@ private fun PreSearchIntro() {
         }
         Text(
             text = "어떤 책을 찾고 있나요?",
-            style = PreSearchTitleStyle,
+            style = MaterialTheme.typography.preSearchTitle,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
@@ -210,7 +222,7 @@ private fun EmptyResult() {
         }
         Text(
             text = "검색 결과가 없어요",
-            style = PreSearchTitleStyle,
+            style = MaterialTheme.typography.preSearchTitle,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
@@ -254,6 +266,7 @@ private fun SearchErrorBookSearchScreenPreview() {
                 query = "코틀린",
                 submittedQuery = "코틀린",
                 errorMessage = "인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
+                canRetry = true,
             ),
         )
     }

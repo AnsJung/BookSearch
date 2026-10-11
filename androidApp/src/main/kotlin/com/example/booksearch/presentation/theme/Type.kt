@@ -24,9 +24,6 @@ val BookTypography = Typography(
     labelSmall = TextStyle(fontFamily = Inter, fontWeight = FontWeight.Medium, fontSize = 11.sp, lineHeight = 15.sp),
 )
 
-val PreSearchTitleStyle = TextStyle(
-    fontFamily = Inter,
-    fontWeight = FontWeight.Bold,
-    fontSize = 20.sp,
-    lineHeight = 24.sp,
-)
+/** 검색 전·검색 결과 없음 화면의 제목: 공통 제목 서체를 유지하면서 크기만 조정한다. */
+val Typography.preSearchTitle: TextStyle
+    get() = titleMedium.copy(fontSize = 20.sp, lineHeight = 24.sp)

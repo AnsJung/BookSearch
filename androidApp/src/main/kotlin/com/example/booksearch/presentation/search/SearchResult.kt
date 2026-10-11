@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,6 +59,8 @@ fun SearchResult(
     books: List<Book>,
     sort: BookSort = BookSort.ACCURACY,
     onSortChanged: (BookSort) -> Unit = {},
+    onBookSelected: (Int) -> Unit = {},
+    listState: LazyListState = rememberLazyListState(),
 ) {
     var isSortMenuOpen by remember { mutableStateOf(false) }
 
@@ -69,13 +73,14 @@ fun SearchResult(
         onSortChanged = onSortChanged,
     )
     LazyColumn(
+        state = listState,
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
     ) {
         items(books.size) { index ->
             val book = books[index]
-            SearchResultItem(book = book)
+            SearchResultItem(book = book, onClick = { onBookSelected(index) })
         }
     }
 }

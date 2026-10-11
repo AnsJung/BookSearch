@@ -13,5 +13,6 @@ data class BookSearchUiState(
     val books : List<Book> = emptyList(),
     val isLoading : Boolean = false,
     val errorMessage : String? = null,
+    val canRetry : Boolean = false,
     val queryErrorMessage : String? = null
 )
