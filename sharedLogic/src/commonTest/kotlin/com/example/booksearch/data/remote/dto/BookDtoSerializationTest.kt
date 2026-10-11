@@ -1,5 +1,6 @@
 package com.example.booksearch.data.remote.dto
 
+import com.example.booksearch.data.mapper.toBook
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -12,6 +13,16 @@ import kotlin.test.assertNull
 class BookDtoSerializationTest {
     // API 명세서의 JSON 정책으로 DTO 계약을 검증한다. 실제 HTTP 클라이언트 설정은 별도 검증한다.
     private val json = Json { ignoreUnknownKeys = true }
+
+    @Test
+    fun longContentsArePreservedThroughDtoAndDomainMapping() {
+        val contents = "도서 소개 문장. ".repeat(40)
+        val book = decode(
+            responseWith("""{"title":"책","contents":"$contents"}""")
+        ).documents.single().toBook()
+
+        assertEquals(contents, book.contents)
+    }
 
     @Test
     fun decodesKakaoFieldNamesAndDocumentValues() {

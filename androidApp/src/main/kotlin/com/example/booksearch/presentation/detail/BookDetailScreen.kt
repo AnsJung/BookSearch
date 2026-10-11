@@ -1,5 +1,6 @@
 package com.example.booksearch.presentation.detail
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,13 +69,13 @@ fun BookDetailScreen(
             IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
                 Image(
                     painter = painterResource(R.drawable.ic_back),
-                    contentDescription = "뒤로 가기",
+                    contentDescription = stringResource(R.string.book_detail_back),
                     modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.width(4.dp))
             Text(
-                text = "도서 정보",
+                text = stringResource(R.string.book_detail_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurface,
             )
@@ -93,7 +95,7 @@ fun BookDetailScreen(
             if (infoRows.isNotEmpty()) {
                 HorizontalDivider(thickness = 1.dp, color = colors.outline)
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    infoRows.forEach { (label, value) -> BookInfoRow(label, value) }
+                    infoRows.forEach { (labelRes, value) -> BookInfoRow(labelRes, value) }
                 }
             }
 
@@ -101,7 +103,7 @@ fun BookDetailScreen(
                 HorizontalDivider(thickness = 1.dp, color = colors.outline)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "책 소개",
+                        text = stringResource(R.string.book_detail_contents_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = colors.onBackground,
                     )
@@ -179,7 +181,7 @@ private fun BookCover(thumbnail: String) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "표지 정보 없음",
+                text = stringResource(R.string.book_detail_cover_missing),
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.onSurfaceVariant,
             )
@@ -187,7 +189,7 @@ private fun BookCover(thumbnail: String) {
     } else {
         AsyncImage(
             model = thumbnail,
-            contentDescription = "도서 표지",
+            contentDescription = stringResource(R.string.book_detail_cover_description),
             modifier = modifier,
             contentScale = ContentScale.Fit,
             placeholder = ColorPainter(colors.surfaceVariant),
@@ -197,7 +199,7 @@ private fun BookCover(thumbnail: String) {
 }
 
 @Composable
-private fun BookInfoRow(label: String, value: String) {
+private fun BookInfoRow(@StringRes labelRes: Int, value: String) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -205,7 +207,7 @@ private fun BookInfoRow(label: String, value: String) {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
-            text = label,
+            text = stringResource(labelRes),
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant,
         )
@@ -219,13 +221,13 @@ private fun BookInfoRow(label: String, value: String) {
     }
 }
 
-internal fun buildBookInfoRows(book: Book): List<Pair<String, String>> = buildList {
-    formatBookDate(book.datetime)?.let { add("출간일" to it) }
+internal fun buildBookInfoRows(book: Book): List<Pair<Int, String>> = buildList {
+    formatBookDate(book.datetime)?.let { add(R.string.book_detail_published_date to it) }
     val isbnTokens = book.isbn.trim().split(Regex("\\s+")).filter(String::isNotBlank)
-    isbnTokens.firstOrNull { it.replace("-", "").length == 10 }?.let { add("ISBN10" to it) }
-    isbnTokens.firstOrNull { it.replace("-", "").length == 13 }?.let { add("ISBN13" to it) }
-    book.price?.let { add("정가" to formatBookPrice(it)) }
-    book.salePrice?.let { add("판매가" to formatBookPrice(it)) }
+    isbnTokens.firstOrNull { it.replace("-", "").length == 10 }?.let { add(R.string.book_detail_isbn10 to it) }
+    isbnTokens.firstOrNull { it.replace("-", "").length == 13 }?.let { add(R.string.book_detail_isbn13 to it) }
+    book.price?.let { add(R.string.book_detail_regular_price to formatBookPrice(it)) }
+    book.salePrice?.let { add(R.string.book_detail_sale_price to formatBookPrice(it)) }
 }
 
 internal fun formatBookDate(datetime: String): String? {

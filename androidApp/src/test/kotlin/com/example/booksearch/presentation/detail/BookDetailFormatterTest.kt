@@ -1,5 +1,6 @@
 package com.example.booksearch.presentation.detail
 
+import com.example.booksearch.R
 import com.example.booksearch.domain.model.Book
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -31,9 +32,9 @@ class BookDetailFormatterTest {
 
         assertEquals(
             listOf(
-                "ISBN10" to "8960777331",
-                "ISBN13" to "9788960777330",
-                "판매가" to "0원",
+                R.string.book_detail_isbn10 to "8960777331",
+                R.string.book_detail_isbn13 to "9788960777330",
+                R.string.book_detail_sale_price to "0원",
             ),
             rows,
         )

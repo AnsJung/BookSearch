@@ -16,13 +16,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.res.stringResource
+import com.example.booksearch.R
 
 /** 한 가지 안내 메시지와 확인 버튼을 표시하는 공통 다이얼로그. */
 @Composable
 fun AppMessageDialog(
     message: String,
     onDismiss: () -> Unit,
-    confirmText: String = "확인",
+    confirmText: String? = null,
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -49,7 +51,10 @@ fun AppMessageDialog(
                         .height(48.dp),
                     shape = RoundedCornerShape(8.dp),
                 ) {
-                    Text(confirmText, style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        confirmText ?: stringResource(R.string.action_confirm),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
             }
         }

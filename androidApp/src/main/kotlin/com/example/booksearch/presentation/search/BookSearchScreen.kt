@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -125,7 +126,7 @@ private fun SearchError(message: String, canRetry: Boolean, onRetry: () -> Unit)
             )
         }
         Text(
-            text = "도서를 불러오지 못했어요",
+            text = stringResource(R.string.search_error_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
@@ -151,7 +152,7 @@ private fun SearchError(message: String, canRetry: Boolean, onRetry: () -> Unit)
                 ),
                 contentPadding = PaddingValues(horizontal = 16.dp),
             ) {
-                Text("다시 시도", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.action_retry), style = MaterialTheme.typography.labelLarge)
             }
         }
     }
@@ -182,13 +183,13 @@ private fun PreSearchIntro() {
             )
         }
         Text(
-            text = "어떤 책을 찾고 있나요?",
+            text = stringResource(R.string.search_intro_title),
             style = MaterialTheme.typography.preSearchTitle,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
         Text(
-            text = "책 제목으로 검색해 보세요.",
+            text = stringResource(R.string.search_intro_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -221,13 +222,13 @@ private fun EmptyResult() {
             )
         }
         Text(
-            text = "검색 결과가 없어요",
+            text = stringResource(R.string.search_empty_title),
             style = MaterialTheme.typography.preSearchTitle,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
         Text(
-            text = "검색어를 바꾸거나 책 제목을 확인해 보세요.",
+            text = stringResource(R.string.search_empty_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

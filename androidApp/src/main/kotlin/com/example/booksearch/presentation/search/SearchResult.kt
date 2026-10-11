@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,10 +86,13 @@ fun SearchResult(
     }
 }
 
-private fun BookSort.displayLabel(): String = when (this) {
-    BookSort.ACCURACY -> "정확도순"
-    BookSort.LATEST -> "발간일순"
-}
+@Composable
+private fun BookSort.displayLabel(): String = stringResource(
+    when (this) {
+        BookSort.ACCURACY -> R.string.sort_accuracy
+        BookSort.LATEST -> R.string.sort_latest
+    },
+)
 
 /**
  * 검색 결과 헤더 컴포저블
@@ -120,7 +124,7 @@ fun SearchResultHeader(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
-                text = "‘$query’",
+                text = stringResource(R.string.search_query_format, query),
                 modifier = Modifier.weight(1f, fill = false),
                 style = MaterialTheme.typography.labelLarge,
                 color = colors.onSurface,
@@ -128,7 +132,7 @@ fun SearchResultHeader(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = "표시된 도서 ${resultCount}권",
+                text = stringResource(R.string.search_result_count_format, resultCount),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Normal),
                 color = colors.onSurfaceVariant,
                 maxLines = 1,

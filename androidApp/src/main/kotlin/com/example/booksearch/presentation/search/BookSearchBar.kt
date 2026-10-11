@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -91,7 +92,7 @@ fun BookSearchBar(
                     Box {
                         if (query.isEmpty()) {
                             Text(
-                                text = "책 제목을 검색하세요",
+                                text = stringResource(R.string.search_hint),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = colors.onSurfaceVariant,
                             )
@@ -107,7 +108,7 @@ fun BookSearchBar(
                 ) {
                     Image(
                         painter = painterResource(R.drawable.ic_clear),
-                        contentDescription = "검색어 지우기",
+                        contentDescription = stringResource(R.string.search_clear_query),
                         modifier = Modifier.size(14.dp),
                     )
                 }
@@ -125,7 +126,7 @@ fun BookSearchBar(
                 contentColor = colors.onPrimary,
             ),
         ) {
-            Text(text = "검색", style = MaterialTheme.typography.labelLarge)
+            Text(text = stringResource(R.string.search_action), style = MaterialTheme.typography.labelLarge)
         }
     }
 }

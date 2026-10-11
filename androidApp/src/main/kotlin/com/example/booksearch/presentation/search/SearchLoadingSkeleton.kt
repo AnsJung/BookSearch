@@ -35,6 +35,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.booksearch.R
 
 /**
  * 검색 결과를 가져오는 동안 표시되는 스켈레톤 UI
@@ -65,7 +67,7 @@ fun SearchLoadingSkeleton(query: String) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "‘$query’ 검색 중",
+                text = stringResource(R.string.search_loading_format, query),
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Normal),
                 color = colors.onSurfaceVariant,

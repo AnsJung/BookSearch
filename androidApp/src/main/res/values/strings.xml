@@ -1,3 +1,31 @@
 <resources>
     <string name="app_name">BookSearch</string>
+
+    <string name="action_confirm">확인</string>
+    <string name="action_retry">다시 시도</string>
+
+    <string name="search_hint">책 제목을 검색하세요</string>
+    <string name="search_clear_query">검색어 지우기</string>
+    <string name="search_action">검색</string>
+    <string name="search_error_title">도서를 불러오지 못했어요</string>
+    <string name="search_intro_title">어떤 책을 찾고 있나요?</string>
+    <string name="search_intro_message">책 제목으로 검색해 보세요.</string>
+    <string name="search_empty_title">검색 결과가 없어요</string>
+    <string name="search_empty_message">검색어를 바꾸거나 책 제목을 확인해 보세요.</string>
+    <string name="search_loading_format">‘%1$s’ 검색 중</string>
+    <string name="search_query_format">‘%1$s’</string>
+    <string name="search_result_count_format">표시된 도서 %1$d권</string>
+    <string name="sort_accuracy">정확도순</string>
+    <string name="sort_latest">발간일순</string>
+
+    <string name="book_detail_back">뒤로 가기</string>
+    <string name="book_detail_title">도서 정보</string>
+    <string name="book_detail_contents_title">책 소개</string>
+    <string name="book_detail_cover_missing">표지 정보 없음</string>
+    <string name="book_detail_cover_description">도서 표지</string>
+    <string name="book_detail_published_date">출간일</string>
+    <string name="book_detail_isbn10">ISBN10</string>
+    <string name="book_detail_isbn13">ISBN13</string>
+    <string name="book_detail_regular_price">정가</string>
+    <string name="book_detail_sale_price">판매가</string>
 </resources>
