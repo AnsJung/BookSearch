@@ -28,7 +28,7 @@ class KakaoBookApiIntegrationTest {
 
             // 서버 데이터는 바뀔 수 있으므로 특정 도서나 정확한 건수를 고정하지 않는다.
             assertTrue(books.isNotEmpty(), "잘 알려진 검색어의 실제 검색 결과가 비어 있습니다.")
-            assertTrue(books.size <= 10, "기본 페이지 크기인 10건을 초과했습니다.")
+            assertTrue(books.size <= 20, "요청한 페이지 크기인 20건을 초과했습니다.")
             assertTrue(books.all { it.title.isNotBlank() }, "제목이 비어 있는 도서가 있습니다.")
 
             println("카카오 도서 검색 연동 성공: ${books.size}건")

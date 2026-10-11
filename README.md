@@ -17,7 +17,6 @@ Kotlin Multiplatform으로 비즈니스 로직과 데이터 처리를 공유하�
 | 직렬화·역직렬화 | kotlinx.serialization |
 | 비동기 처리 | Kotlin Coroutines, Flow |
 | 이미지 로딩·캐싱 | Android: Coil / iOS: Nuke, NukeUI |
-| 설정 저장 | Preferences DataStore |
 | 의존성 주입 | Koin |
 | API | 카카오 도서 검색 API |
 

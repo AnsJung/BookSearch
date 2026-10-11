@@ -17,6 +17,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +47,11 @@ fun SearchResultItem(
 ) {
     val colors = MaterialTheme.colorScheme
     val authors = book.authors.filter(String::isNotBlank).joinToString(" · ")
+    var imageFailed by remember(book.thumbnail) { mutableStateOf(false) }
+    val coverModifier = Modifier
+        .size(width = 68.dp, height = 96.dp)
+        .clip(RoundedCornerShape(4.dp))
+        .background(colors.surfaceVariant)
 
     Box(
         modifier = modifier
@@ -61,18 +70,24 @@ fun SearchResultItem(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AsyncImage(
-                model = book.thumbnail.takeIf(String::isNotBlank),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(width = 68.dp, height = 96.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(colors.surfaceVariant),
-                placeholder = ColorPainter(colors.surfaceVariant),
-                error = ColorPainter(colors.surfaceVariant),
-                fallback = ColorPainter(colors.surfaceVariant),
-                contentScale = ContentScale.Fit,
-            )
+            if (book.thumbnail.isBlank() || imageFailed) {
+                Box(modifier = coverModifier, contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_book_placeholder),
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
+            } else {
+                AsyncImage(
+                    model = book.thumbnail,
+                    contentDescription = null,
+                    modifier = coverModifier,
+                    placeholder = ColorPainter(colors.surfaceVariant),
+                    contentScale = ContentScale.Fit,
+                    onError = { imageFailed = true },
+                )
+            }
 
             Column(
                 modifier = Modifier.weight(1f),
