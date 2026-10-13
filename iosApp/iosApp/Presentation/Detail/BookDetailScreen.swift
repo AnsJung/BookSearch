@@ -97,7 +97,7 @@ struct BookDetailScreen: View {
 
                 if !book.publisher.isEmpty {
                     Text(book.publisher)
-                        .font(.custom("Inter-Regular", size: 13))
+                        .bookTextStyle(.bodySmall)
                         .foregroundStyle(BookColors.textSecondary.opacity(0.8))
                         .multilineTextAlignment(.center)
                 }
