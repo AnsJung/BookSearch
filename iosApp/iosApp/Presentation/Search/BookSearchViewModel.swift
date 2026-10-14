@@ -20,7 +20,12 @@ final class BookSearchViewModel {
     @ObservationIgnored private var searchTask: Task<Void, Never>?
     @ObservationIgnored private var activeSearchCondition: (query: String, sort: String)?
     @ObservationIgnored private var generation = 0
-    @ObservationIgnored private var useCase: SearchBooksUseCase?
+    @ObservationIgnored private let useCase: SearchBooksUseCase
+
+    init(useCase: SearchBooksUseCase) {
+        self.useCase = useCase
+    }
+
     // MARK: - 사용자 입력과 화면 동작
     func onQueryChanged(_ value: String) {
         query = value
@@ -70,10 +75,6 @@ final class BookSearchViewModel {
         errorMessage = nil
         canRetry = false
         queryErrorMessage = nil
-
-        // Preview에서는 검색 전까지 Koin을 참조하지 않는다.
-        if useCase == nil { useCase = SearchBooksUseCaseProvider().searchBooksUseCase }
-        guard let useCase else { return }
 
         searchTask = Task {
             defer {

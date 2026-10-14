@@ -3,6 +3,8 @@ import SwiftUI
 
 @main
 struct iOSApp: App {
+    private let searchBooksUseCase: SearchBooksUseCase
+
     init() {
         guard let apiKey = Bundle.main.object(
             forInfoDictionaryKey: "KAKAO_REST_API_KEY"
@@ -10,10 +12,11 @@ struct iOSApp: App {
             fatalError("KAKAO_REST_API_KEY 설정이 필요합니다.")
         }
         KoinInitializerKt.doInitKoin(apiKey: apiKey)
+        searchBooksUseCase = SearchBooksUseCaseProvider().searchBooksUseCase
     }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(useCase: searchBooksUseCase)
                 .bookTheme()
         }
     }

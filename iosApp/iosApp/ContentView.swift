@@ -1,12 +1,17 @@
+import SharedLogic
 import SwiftUI
 
 struct ContentView: View {
+    let useCase: SearchBooksUseCase
+
     var body: some View {
-        BookSearchScreen()
+        BookSearchScreen(useCase: useCase)
     }
 }
 
+#if DEBUG
 #Preview {
-    ContentView()
+    ContentView(useCase: SearchBooksUseCase(repository: PreviewBookRepository()))
         .bookTheme()
 }
+#endif

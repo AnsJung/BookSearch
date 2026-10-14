@@ -4,10 +4,14 @@ import SwiftUI
 /// 검색 상태에 따라 검색 전·로딩·오류·결과 화면을 전환한다.
 struct BookSearchScreen: View {
     // 화면이 소유하는 @Observable 모델. 읽은 속성이 바뀌면 관련 UI가 갱신된다.
-    @State private var model = BookSearchViewModel()
+    @State private var model: BookSearchViewModel
 
     // 상세 화면으로 이동할 책의 인덱스를 보관하는 화면 전용 상태.
     @State private var navigationPath: [Int] = []
+
+    init(useCase: SearchBooksUseCase) {
+        _model = State(initialValue: BookSearchViewModel(useCase: useCase))
+    }
 
     // MARK: - 화면 구성
     var body: some View {
@@ -120,7 +124,9 @@ struct BookSearchScreen: View {
     }
 }
 
+#if DEBUG
 #Preview("검색 전") {
-    BookSearchScreen()
+    BookSearchScreen(useCase: SearchBooksUseCase(repository: PreviewBookRepository()))
         .bookTheme()
 }
+#endif
