@@ -76,6 +76,22 @@ class KakaoBookApiTest {
     }
 
     @Test
+    fun sendsRequestedPageAndSize() = runTest {
+        val engine = MockEngine { request ->
+            assertEquals("2", request.url.parameters["page"])
+            assertEquals("20", request.url.parameters["size"])
+            respond(EMPTY_RESPONSE, headers = JSON_HEADERS)
+        }
+        val client = HttpClient(engine) { configureBookClient("test-key") }
+        try {
+            KakaoBookApi(client).searchBooks("책", BookSort.ACCURACY, page = 2, size = 20)
+        } finally {
+            client.close()
+            engine.close()
+        }
+    }
+
+    @Test
     fun deserializesResponseUsingSharedJsonConfiguration() = runTest {
         val engine = MockEngine {
             respond("""{

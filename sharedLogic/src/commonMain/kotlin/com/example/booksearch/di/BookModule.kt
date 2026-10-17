@@ -5,6 +5,7 @@ import com.example.booksearch.data.remote.createBookHttpClient
 import com.example.booksearch.data.repository.BookRepositoryImpl
 import com.example.booksearch.domain.repository.BookRepository
 import com.example.booksearch.domain.usecase.SearchBooksUseCase
+import com.example.booksearch.domain.usecase.SearchBooksPageUseCase
 import io.ktor.client.HttpClient
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -23,4 +24,5 @@ internal fun bookModule(apiKey: String): Module = module {
     }
 
     factory<SearchBooksUseCase> { SearchBooksUseCase(get()) }
+    factory<SearchBooksPageUseCase> { SearchBooksPageUseCase(get()) }
 }

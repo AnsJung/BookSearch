@@ -23,7 +23,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,10 +48,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.paging.LoadState
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.booksearch.R
 import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.presentation.theme.BookSearchTheme
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * 검색 결과 화면 컴포저블
@@ -57,17 +64,18 @@ import com.example.booksearch.presentation.theme.BookSearchTheme
 @Composable
 fun SearchResult(
     query: String,
-    books: List<Book>,
+    books: LazyPagingItems<Book>,
     sort: BookSort = BookSort.ACCURACY,
     onSortChanged: (BookSort) -> Unit = {},
-    onBookSelected: (Int) -> Unit = {},
+    onBookSelected: (Book) -> Unit = {},
+    onRetry: () -> Unit = {},
     listState: LazyListState = rememberLazyListState(),
 ) {
     var isSortMenuOpen by remember { mutableStateOf(false) }
 
     SearchResultHeader(
         query = query,
-        resultCount = books.size,
+        resultCount = books.itemCount,
         sort = sort,
         isMenuOpen = isSortMenuOpen,
         onMenuOpenChange = { isSortMenuOpen = it },
@@ -79,9 +87,33 @@ fun SearchResult(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
     ) {
-        items(books.size) { index ->
-            val book = books[index]
-            SearchResultItem(book = book, onClick = { onBookSelected(index) })
+        items(books.itemCount) { index ->
+            books[index]?.let { book ->
+                SearchResultItem(book = book, onClick = { onBookSelected(book) })
+            }
+        }
+        when (val append = books.loadState.append) {
+            is LoadState.Loading -> item {
+                Box(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            is LoadState.Error -> item {
+                val error = append.error.toSearchError()
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(error.message, style = MaterialTheme.typography.bodyMedium)
+                    if (error.canRetry) {
+                        OutlinedButton(onClick = onRetry) {
+                            Text(stringResource(R.string.action_retry))
+                        }
+                    }
+                }
+            }
+            else -> Unit
         }
     }
 }
@@ -271,24 +303,31 @@ private fun SortOptionsPopup(
 private fun SearchResultPreview() {
     BookSearchTheme {
         var selectedSort by remember { mutableStateOf(BookSort.ACCURACY) }
+        val previewBooks = remember {
+            flowOf(
+                PagingData.from(
+                    listOf(
+                        Book(
+                            title = "바다의 기억을 엮는 사람들",
+                            contents = "",
+                            url = "",
+                            isbn = "",
+                            datetime = "",
+                            authors = listOf("서은채", "윤해솔", "문지안"),
+                            publisher = "여름의서가",
+                            translators = emptyList(),
+                            price = null,
+                            salePrice = null,
+                            thumbnail = "",
+                            status = "",
+                        ),
+                    ),
+                ),
+            )
+        }.collectAsLazyPagingItems()
         SearchResult(
             query = "바다의 기억",
-            books = listOf(
-                Book(
-                    title = "바다의 기억을 엮는 사람들",
-                    contents = "",
-                    url = "",
-                    isbn = "",
-                    datetime = "",
-                    authors = listOf("서은채", "윤해솔", "문지안"),
-                    publisher = "여름의서가",
-                    translators = emptyList(),
-                    price = null,
-                    salePrice = null,
-                    thumbnail = "",
-                    status = "",
-                ),
-            ),
+            books = previewBooks,
             sort = selectedSort,
             onSortChanged = { selectedSort = it },
         )

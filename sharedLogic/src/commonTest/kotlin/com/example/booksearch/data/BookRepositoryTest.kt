@@ -65,6 +65,27 @@ class BookRepositoryTest {
         }
     }
 
+    @Test
+    fun pageSearchKeepsKakaoEndFlag() = runTest {
+        val engine = MockEngine { request ->
+            assertEquals("2", request.url.parameters["page"])
+            respond("""{
+                "meta":{"total_count":40,"pageable_count":40,"is_end":false},
+                "documents":[{"title":"다음 책"}]
+            }""", headers = JSON_HEADERS)
+        }
+        val client = HttpClient(engine) { configureBookClient("test-key") }
+        try {
+            val page = BookRepositoryImpl(KakaoBookApi(client))
+                .searchByTitlePage("책", BookSort.ACCURACY, page = 2, size = 20)
+            assertEquals(listOf("다음 책"), page.books.map { it.title })
+            assertEquals(false, page.isEnd)
+        } finally {
+            client.close()
+            engine.close()
+        }
+    }
+
     companion object {
         private val JSON_HEADERS = headersOf(HttpHeaders.ContentType, "application/json")
     }

@@ -2,21 +2,20 @@ package com.example.booksearch.di
 
 import androidx.lifecycle.ViewModelStore
 import com.example.booksearch.domain.model.Book
+import com.example.booksearch.domain.model.BookSearchPage
 import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.domain.repository.BookRepository
 import com.example.booksearch.presentation.BookSearchViewModel
+import androidx.paging.testing.asSnapshot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame
-import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.koin.core.context.GlobalContext
@@ -62,12 +61,10 @@ class PresentationModuleTest {
         viewModel.onQueryChanged(" 코틀린 ")
         viewModel.onSortChanged(BookSort.LATEST)
         viewModel.search()
-        advanceUntilIdle()
+        viewModel.books.asSnapshot()
 
         assertEquals(listOf("코틀린" to BookSort.LATEST), repository.requests)
         assertEquals("코틀린", viewModel.uiState.value.submittedQuery)
-        assertFalse(viewModel.uiState.value.isLoading)
-        assertNull(viewModel.uiState.value.errorMessage)
     }
 
     private class RecordingRepository : BookRepository {
@@ -76,6 +73,13 @@ class PresentationModuleTest {
         override suspend fun searchByTitle(query: String, sort: BookSort): List<Book> {
             requests += query to sort
             return emptyList()
+        }
+
+        override suspend fun searchByTitlePage(
+            query: String, sort: BookSort, page: Int, size: Int,
+        ): BookSearchPage {
+            requests += query to sort
+            return BookSearchPage(emptyList(), isEnd = true)
         }
     }
 }

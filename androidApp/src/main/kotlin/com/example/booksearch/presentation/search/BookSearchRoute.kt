@@ -7,8 +7,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.booksearch.domain.model.Book
 import com.example.booksearch.presentation.BookSearchViewModel
 import com.example.booksearch.presentation.detail.BookDetailScreen
 import org.koin.androidx.compose.koinViewModel
@@ -17,27 +20,43 @@ import org.koin.androidx.compose.koinViewModel
 fun BookSearchRoute(
     viewModel: BookSearchViewModel = koinViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var selectedBookIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    val searchInputState by viewModel.uiState.collectAsStateWithLifecycle()
+    val books = viewModel.books.collectAsLazyPagingItems()
+    var selectedBook by remember { mutableStateOf<Book?>(null) }
     val resultListState = rememberLazyListState()
-    val selectedBook = selectedBookIndex?.let(uiState.books::getOrNull)
-
-    LaunchedEffect(uiState.isLoading) {
-        if (uiState.isLoading) resultListState.scrollToItem(0)
+    val searchBodyState = when {
+        searchInputState.submittedQuery == null -> SearchContentState.PreSearch
+        books.loadState.refresh is LoadState.Loading -> SearchContentState.Loading
+        books.loadState.refresh is LoadState.Error ->
+            (books.loadState.refresh as LoadState.Error).error.toSearchError()
+        books.itemCount == 0 -> SearchContentState.Empty
+        else -> SearchContentState.Results
     }
 
-    BackHandler(enabled = selectedBook != null) { selectedBookIndex = null }
-    if (selectedBook != null) {
-        BookDetailScreen(book = selectedBook, onBack = { selectedBookIndex = null })
+    LaunchedEffect(searchInputState.requestId) {
+        if (searchInputState.requestId > 0) resultListState.scrollToItem(0)
+    }
+
+    BackHandler(enabled = selectedBook != null) { selectedBook = null }
+    val book = selectedBook
+    if (book != null) {
+        BookDetailScreen(book = book, onBack = { selectedBook = null })
     } else {
         BookSearchScreen(
-            uiState = uiState,
+            searchInputState = searchInputState,
+            books = books,
+            searchBodyState = searchBodyState,
             onQueryChanged = viewModel::onQueryChanged,
-            onSearch = viewModel::search,
-            onRetry = viewModel::retry,
+            onSearch = {
+                val sameQuery = searchInputState.query.trim() == searchInputState.submittedQuery
+                if (!sameQuery || books.loadState.refresh !is LoadState.Loading) {
+                    viewModel.search()
+                }
+            },
+            onRetry = books::retry,
             onSortChanged = viewModel::onSortChanged,
             onQueryErrorDismiss = viewModel::dismissQueryError,
-            onBookSelected = { selectedBookIndex = it },
+            onBookSelected = { selectedBook = it },
             resultListState = resultListState,
         )
     }

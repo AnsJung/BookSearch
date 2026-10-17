@@ -4,6 +4,7 @@ import com.example.booksearch.data.mapper.toBook
 import com.example.booksearch.data.remote.KakaoBookApi
 import com.example.booksearch.data.remote.classifyKakaoError
 import com.example.booksearch.domain.model.Book
+import com.example.booksearch.domain.model.BookSearchPage
 import com.example.booksearch.domain.model.BookSearchException
 import com.example.booksearch.domain.model.BookSearchFailure
 import com.example.booksearch.domain.model.BookSort
@@ -24,9 +25,20 @@ internal class BookRepositoryImpl(
     override suspend fun searchByTitle(
         query: String,
         sort: BookSort
-    ): List<Book> {
+    ): List<Book> = searchByTitlePage(query, sort, page = 1, size = 20).books
+
+    override suspend fun searchByTitlePage(
+        query: String,
+        sort: BookSort,
+        page: Int,
+        size: Int,
+    ): BookSearchPage {
         return try {
-            kakaoBookApi.searchBooks(query, sort).documents.map { it.toBook() }
+            val response = kakaoBookApi.searchBooks(query, sort, page, size)
+            BookSearchPage(
+                books = response.documents.map { it.toBook() },
+                isEnd = response.meta.isEnd,
+            )
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (classified: BookSearchException) {

@@ -1,6 +1,7 @@
 package com.example.booksearch.domain.repository
 
 import com.example.booksearch.domain.model.Book
+import com.example.booksearch.domain.model.BookSearchPage
 import com.example.booksearch.domain.model.BookSort
 
 /**
@@ -12,4 +13,11 @@ interface BookRepository {
         query: String,
         sort: BookSort,
     ): List<Book>
+
+    suspend fun searchByTitlePage(
+        query: String,
+        sort: BookSort,
+        page: Int,
+        size: Int,
+    ): BookSearchPage
 }

@@ -33,6 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.PagingData
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.booksearch.R
 import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSort
@@ -40,19 +43,22 @@ import com.example.booksearch.presentation.dialog.AppMessageDialog
 import com.example.booksearch.presentation.model.BookSearchUiState
 import com.example.booksearch.presentation.theme.BookSearchTheme
 import com.example.booksearch.presentation.theme.preSearchTitle
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * 메인 화면 컴포저블
  */
 @Composable
-fun BookSearchScreen(
-    uiState: BookSearchUiState = remember { BookSearchUiState() },
+internal fun BookSearchScreen(
+    searchInputState: BookSearchUiState = remember { BookSearchUiState() },
+    books: LazyPagingItems<Book>,
+    searchBodyState: SearchContentState,
     onQueryChanged: (String) -> Unit = {},
     onSearch: () -> Unit = {},
     onRetry: () -> Unit = {},
     onSortChanged: (BookSort) -> Unit = {},
     onQueryErrorDismiss: () -> Unit = {},
-    onBookSelected: (Int) -> Unit = {},
+    onBookSelected: (Book) -> Unit = {},
     resultListState: LazyListState = rememberLazyListState(),
 ) {
     Column(
@@ -62,43 +68,48 @@ fun BookSearchScreen(
             .safeDrawingPadding(),
     ) {
         BookSearchBar(
-            query = uiState.query,
+            query = searchInputState.query,
             onQueryChanged = onQueryChanged,
             onSearch = onSearch,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
         )
 
-        when {
-            uiState.isLoading -> SearchLoadingSkeleton(
-                query = uiState.submittedQuery ?: uiState.query.trim(),
+        when (val state = searchBodyState) {
+            SearchContentState.Loading -> SearchLoadingSkeleton(
+                query = searchInputState.submittedQuery ?: searchInputState.query.trim(),
             )
-            uiState.errorMessage != null -> SearchError(
-                message = uiState.errorMessage,
-                canRetry = uiState.canRetry,
+            is SearchContentState.Error -> SearchError(
+                message = state.message,
+                canRetry = state.canRetry,
                 onRetry = onRetry,
             )
-            uiState.submittedQuery == null -> PreSearchIntro()
-            uiState.books.isEmpty() -> EmptyResult()
-            else -> {
+            SearchContentState.PreSearch -> PreSearchIntro()
+            SearchContentState.Empty -> EmptyResult()
+            SearchContentState.Results -> {
                 SearchResult(
-                    query = uiState.submittedQuery,
-                    books = uiState.books,
-                    sort = uiState.sort,
+                    query = requireNotNull(searchInputState.submittedQuery),
+                    books = books,
+                    sort = searchInputState.sort,
                     onSortChanged = onSortChanged,
                     onBookSelected = onBookSelected,
+                    onRetry = onRetry,
                     listState = resultListState,
                 )
             }
         }
     }
 
-    uiState.queryErrorMessage?.let { message ->
+    searchInputState.queryErrorMessage?.let { message ->
         AppMessageDialog(
             message = message,
             onDismiss = onQueryErrorDismiss,
         )
     }
 }
+
+@Composable
+private fun previewBooks(books: List<Book> = emptyList()): LazyPagingItems<Book> =
+    remember(books) { flowOf(PagingData.from(books)) }.collectAsLazyPagingItems()
 
 /**
  * 검색 오류 화면
@@ -240,7 +251,7 @@ private fun EmptyResult() {
 @Composable
 private fun PreSearchBookSearchScreenPreview() {
     BookSearchTheme {
-        BookSearchScreen()
+        BookSearchScreen(books = previewBooks(), searchBodyState = SearchContentState.PreSearch)
     }
 }
 
@@ -249,11 +260,12 @@ private fun PreSearchBookSearchScreenPreview() {
 private fun LoadingBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen(
-            uiState = BookSearchUiState(
+            searchInputState = BookSearchUiState(
                 query = "바다의 기억",
                 submittedQuery = "바다의 기억",
-                isLoading = true,
             ),
+            books = previewBooks(),
+            searchBodyState = SearchContentState.Loading,
         )
     }
 }
@@ -263,12 +275,12 @@ private fun LoadingBookSearchScreenPreview() {
 private fun SearchErrorBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen(
-            uiState = BookSearchUiState(
+            searchInputState = BookSearchUiState(
                 query = "코틀린",
                 submittedQuery = "코틀린",
-                errorMessage = "인터넷 연결을 확인한 뒤 다시 시도해 주세요.",
-                canRetry = true,
             ),
+            books = previewBooks(),
+            searchBodyState = SearchContentState.Error("인터넷 연결을 확인한 뒤 다시 시도해 주세요.", true),
         )
     }
 }
@@ -278,7 +290,9 @@ private fun SearchErrorBookSearchScreenPreview() {
 private fun QueryErrorBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen(
-            uiState = BookSearchUiState(queryErrorMessage = "검색어를 입력해주세요."),
+            searchInputState = BookSearchUiState(queryErrorMessage = "검색어를 입력해주세요."),
+            books = previewBooks(),
+            searchBodyState = SearchContentState.PreSearch,
         )
     }
 }
@@ -288,10 +302,12 @@ private fun QueryErrorBookSearchScreenPreview() {
 private fun EmptyBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen(
-            uiState = BookSearchUiState(
+            searchInputState = BookSearchUiState(
                 query = "없는 책",
                 submittedQuery = "없는 책",
             ),
+            books = previewBooks(),
+            searchBodyState = SearchContentState.Empty,
         )
     }
 }
@@ -301,10 +317,12 @@ private fun EmptyBookSearchScreenPreview() {
 private fun SearchResultBookSearchScreenPreview() {
     BookSearchTheme {
         BookSearchScreen(
-            uiState = BookSearchUiState(
+            searchInputState = BookSearchUiState(
                 query = "바다의 기억",
                 submittedQuery = "바다의 기억",
-                books = listOf(
+            ),
+            books = previewBooks(
+                listOf(
                     Book(
                         title = "바다의 기억을 엮는 사람들",
                         contents = "",
@@ -321,6 +339,7 @@ private fun SearchResultBookSearchScreenPreview() {
                     ),
                 ),
             ),
+            searchBodyState = SearchContentState.Results,
         )
     }
 }

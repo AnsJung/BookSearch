@@ -18,6 +18,7 @@ kotlin = "2.4.20"
 material3 = "1.12.0-alpha03"
 koin = "4.2.2"
 coil = "3.6.3"
+paging = "3.5.3"
 
 [libraries]
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -53,6 +54,9 @@ android-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-run
 android-material3 = { module = "androidx.compose.material3:material3", version = "1.4.0" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
+androidx-paging-testing = { module = "androidx.paging:paging-testing", version.ref = "paging" }
 
 [plugins]
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

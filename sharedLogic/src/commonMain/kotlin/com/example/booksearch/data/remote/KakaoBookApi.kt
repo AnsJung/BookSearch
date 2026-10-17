@@ -20,13 +20,18 @@ internal class KakaoBookApi(
     /**
      * 검색어와 정렬 조건으로 도서를 검색하고 응답 DTO를 반환한다.
      */
-    suspend fun searchBooks(query: String, sort: BookSort): BookSearchResponseDTO {
+    suspend fun searchBooks(
+        query: String,
+        sort: BookSort,
+        page: Int = 1,
+        size: Int = 20,
+    ): BookSearchResponseDTO {
         return client.get(KakaoApiConfig.BOOK_SEARCH_PATH) {
             parameter("query", query)
             parameter("sort", sort.name.lowercase())
             parameter("target", "title")
-            parameter("page", 1)
-            parameter("size", 20)
+            parameter("page", page)
+            parameter("size", size)
         }
             .let { response ->
                 try {
