@@ -43,6 +43,7 @@ internal fun HttpClientConfig<*>.configureBookClient(
         install(Logging) {
             logger = httpLogger
             level = LogLevel.ALL
+            // 헤더 로그를 남기지 않도록 설정
             sanitizeHeader { it.equals(HttpHeaders.Authorization, ignoreCase = true) }
         }
     }
