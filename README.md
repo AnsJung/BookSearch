@@ -7,18 +7,18 @@ Kotlin Multiplatform으로 비즈니스 로직과 데이터 처리를 공유하�
 
 아래는 개발 과정에서 적용할 기술입니다.
 
-| 구분 | 기술 |
-| --- | --- |
-| 언어 | Kotlin, Swift |
-| 공통 로직 | Kotlin Multiplatform (KMP) |
+| 구분 | 기술                                      |
+| --- |-----------------------------------------|
+| 언어 | Kotlin, Swift                           |
+| 공통 로직 | Kotlin Multiplatform (KMP)              |
 | UI | Android: Jetpack Compose / iOS: SwiftUI |
-| 아키텍처 | Clean Architecture + MVVM |
-| 네트워크 | Ktor Client |
-| 직렬화·역직렬화 | kotlinx.serialization |
-| 비동기 처리 | Kotlin Coroutines, Flow |
-| 이미지 로딩·캐싱 | Android: Coil / iOS: Nuke, NukeUI |
-| 의존성 주입 | Koin |
-| API | 카카오 도서 검색 API |
+| 아키텍처 | Clean Architecture + MVVM               |
+| 네트워크 | Ktor Client + Paging                    |
+| 직렬화·역직렬화 | kotlinx.serialization                   |
+| 비동기 처리 | Kotlin Coroutines, Flow                 |
+| 이미지 로딩·캐싱 | Android: Coil / iOS: Nuke, NukeUI       |
+| 의존성 주입 | Koin                                    |
+| API | 카카오 도서 검색 API                           |
 
 Presentation은 플랫폼별로 구현하고, Domain과 Data는 공통 코드로 구성합니다.
 
