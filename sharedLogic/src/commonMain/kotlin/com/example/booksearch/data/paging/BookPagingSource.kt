@@ -1,22 +1,24 @@
-package com.example.booksearch.presentation.search
+package com.example.booksearch.data.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSort
-import com.example.booksearch.domain.usecase.SearchBooksPageUseCase
+import com.example.booksearch.domain.usecase.SearchBooksUseCase
 import kotlin.coroutines.cancellation.CancellationException
 
 /** 카카오 도서 검색의 페이지 번호를 Paging의 키로 사용한다. */
-internal class BookPagingSource(
-    private val searchBooksPage: SearchBooksPageUseCase,
+class BookPagingSource(
+    private val searchBooksPage: SearchBooksUseCase,
     private val query: String,
     private val sort: BookSort,
+    private val onTotalCount: (Int) -> Unit = {},
 ) : PagingSource<Int, Book>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> {
         val page = params.key ?: FIRST_PAGE
         return try {
             val result = searchBooksPage(query, sort, page, PAGE_SIZE)
+            result.totalCount?.let(onTotalCount)
             LoadResult.Page(
                 data = result.books,
                 prevKey = if (page == FIRST_PAGE) null else page - 1,

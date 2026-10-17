@@ -6,5 +6,9 @@ final class PreviewBookRepository: BookRepository {
     func searchByTitle(query: String, sort: BookSort) async throws -> [Book] {
         []
     }
+
+    func searchByTitlePage(query: String, sort: BookSort, page: Int32, size: Int32) async throws -> BookSearchPage {
+        BookSearchPage(books: [], isEnd: true, totalCount: 0)
+    }
 }
 #endif

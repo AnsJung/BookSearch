@@ -65,6 +65,7 @@ import kotlinx.coroutines.flow.flowOf
 fun SearchResult(
     query: String,
     books: LazyPagingItems<Book>,
+    totalCount: Int? = null,
     sort: BookSort = BookSort.ACCURACY,
     onSortChanged: (BookSort) -> Unit = {},
     onBookSelected: (Book) -> Unit = {},
@@ -75,7 +76,7 @@ fun SearchResult(
 
     SearchResultHeader(
         query = query,
-        resultCount = books.itemCount,
+        resultCount = totalCount,
         sort = sort,
         isMenuOpen = isSortMenuOpen,
         onMenuOpenChange = { isSortMenuOpen = it },
@@ -132,7 +133,7 @@ private fun BookSort.displayLabel(): String = stringResource(
 @Composable
 fun SearchResultHeader(
     query: String,
-    resultCount: Int,
+    resultCount: Int?,
     sort: BookSort,
     isMenuOpen: Boolean,
     onMenuOpenChange: (Boolean) -> Unit,
@@ -163,12 +164,14 @@ fun SearchResultHeader(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text(
-                text = stringResource(R.string.search_result_count_format, resultCount),
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Normal),
-                color = colors.onSurfaceVariant,
-                maxLines = 1,
-            )
+            resultCount?.let { count ->
+                Text(
+                    text = stringResource(R.string.search_result_count_format, count),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Normal),
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
         }
 
         SortSelector(
@@ -328,6 +331,7 @@ private fun SearchResultPreview() {
         SearchResult(
             query = "바다의 기억",
             books = previewBooks,
+            totalCount = 1,
             sort = selectedSort,
             onSortChanged = { selectedSort = it },
         )

@@ -11,19 +11,26 @@ final class BookSearchViewModel {
     private(set) var submittedQuery: String?
     private(set) var sort: BookSort = .accuracy
     private(set) var books: [Book] = []
+    private(set) var totalCount: Int?
     private(set) var isLoading = false
     private(set) var errorMessage: String?
     private(set) var canRetry = false
+    private(set) var isAppending = false
+    private(set) var appendErrorMessage: String?
+    private(set) var canRetryAppend = false
     private(set) var queryErrorMessage: String?
     private(set) var searchRequestVersion = 0
     // MARK: - 검색 요청 관리용 내부 값
-    @ObservationIgnored private var searchTask: Task<Void, Never>?
     @ObservationIgnored private var activeSearchCondition: (query: String, sort: String)?
     @ObservationIgnored private var generation = 0
-    @ObservationIgnored private let useCase: SearchBooksUseCase
+    @ObservationIgnored private let bridge: BookPagingBridge
 
     init(useCase: SearchBooksUseCase) {
-        self.useCase = useCase
+        bridge = BookPagingBridge(searchBooksPage: useCase)
+    }
+
+    deinit {
+        bridge.close()
     }
 
     // MARK: - 사용자 입력과 화면 동작
@@ -48,8 +55,17 @@ final class BookSearchViewModel {
     }
 
     func retry() {
-        guard !isLoading, canRetry, let submittedQuery else { return }
-        executeSearch(query: submittedQuery, sort: sort)
+        guard !isLoading, canRetry else { return }
+        bridge.retry()
+    }
+
+    func retryAppend() {
+        guard !isAppending, canRetryAppend else { return }
+        bridge.retry()
+    }
+
+    func onBookAppeared(at index: Int) {
+        bridge.onItemVisible(index: Int32(index))
     }
     
     // MARK: - 검색 실행
@@ -64,31 +80,32 @@ final class BookSearchViewModel {
            activeSearchCondition.query == condition.query,
            activeSearchCondition.sort == condition.sort { return }
 
-        searchTask?.cancel()
         generation += 1
         searchRequestVersion += 1
         let requestGeneration = generation
         activeSearchCondition = condition
         submittedQuery = query
         books = []
+        totalCount = nil
         isLoading = true
         errorMessage = nil
         canRetry = false
+        isAppending = false
+        appendErrorMessage = nil
+        canRetryAppend = false
         queryErrorMessage = nil
 
-        searchTask = Task {
-            defer {
-                if requestGeneration == generation { isLoading = false }
-            }
-            do {
-                let result = try await useCase.invoke(query: query, sort: sort)
-                guard !Task.isCancelled, requestGeneration == generation else { return }
-                books = result
-            } catch {
-                guard !Task.isCancelled, requestGeneration == generation else { return }
-                let failure = ((error as NSError).kotlinException as? BookSearchException)?.failure
-                errorMessage = Self.message(for: failure)
-                canRetry = Self.canRetry(failure)
+        bridge.start(query: query, sort: sort) { [weak self] pagingState in
+            Task { @MainActor [weak self] in
+                guard let self, requestGeneration == self.generation else { return }
+                self.books = pagingState.books
+                self.totalCount = pagingState.totalCount.map { Int($0.int32Value) }
+                self.isLoading = pagingState.isRefreshing
+                self.isAppending = pagingState.isAppending
+                self.errorMessage = pagingState.refreshError.map { Self.message(for: $0.failure) }
+                self.canRetry = pagingState.refreshError?.canRetry ?? false
+                self.appendErrorMessage = pagingState.appendError.map { Self.message(for: $0.failure) }
+                self.canRetryAppend = pagingState.appendError?.canRetry ?? false
             }
         }
     }
@@ -113,10 +130,5 @@ final class BookSearchViewModel {
         default:
             "잠시 후 다시 시도해 주세요."
         }
-    }
-
-    private static func canRetry(_ failure: BookSearchFailure?) -> Bool {
-        guard let failure else { return false }
-        return [BookSearchFailure.network, .timeout, .server].contains { $0.name == failure.name }
     }
 }

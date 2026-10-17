@@ -1,26 +1,19 @@
 package com.example.booksearch.domain.usecase
 
-import com.example.booksearch.domain.model.Book
-import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.domain.model.BookSearchException
+import com.example.booksearch.domain.model.BookSearchPage
+import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.domain.repository.BookRepository
 import kotlin.coroutines.cancellation.CancellationException
 
-/**
- * 도서 검색 UseCase
- * - 검색어를 기반으로 도서 정보를 조회한다.
- */
-class SearchBooksUseCase(
-    private val repository: BookRepository,
-) {
+/** 제목 검색 결과의 지정한 페이지를 가져온다. */
+class SearchBooksUseCase(private val repository: BookRepository) {
     @Throws(IllegalArgumentException::class, BookSearchException::class, CancellationException::class)
-    suspend operator fun invoke(
-        query: String,
-        sort: BookSort,
-    ): List<Book> {
+    suspend operator fun invoke(query: String, sort: BookSort, page: Int, size: Int): BookSearchPage {
         val keyword = query.trim()
         require(keyword.isNotEmpty()) { "검색어가 비어 있습니다." }
-
-        return repository.searchByTitle(keyword, sort)
+        require(page in 1..50) { "페이지는 1~50 사이여야 합니다." }
+        require(size in 1..50) { "페이지 크기는 1~50 사이여야 합니다." }
+        return repository.searchByTitlePage(keyword, sort, page, size)
     }
 }

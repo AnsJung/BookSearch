@@ -89,6 +89,7 @@ internal fun BookSearchScreen(
                 SearchResult(
                     query = requireNotNull(searchInputState.submittedQuery),
                     books = books,
+                    totalCount = searchInputState.totalCount,
                     sort = searchInputState.sort,
                     onSortChanged = onSortChanged,
                     onBookSelected = onBookSelected,
@@ -320,6 +321,7 @@ private fun SearchResultBookSearchScreenPreview() {
             searchInputState = BookSearchUiState(
                 query = "바다의 기억",
                 submittedQuery = "바다의 기억",
+                totalCount = 1,
             ),
             books = previewBooks(
                 listOf(

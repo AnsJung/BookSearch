@@ -38,6 +38,7 @@ internal class BookRepositoryImpl(
             BookSearchPage(
                 books = response.documents.map { it.toBook() },
                 isEnd = response.meta.isEnd,
+                totalCount = response.meta.totalCount,
             )
         } catch (cancelled: CancellationException) {
             throw cancelled

@@ -14,7 +14,7 @@
     <string name="search_empty_message">검색어를 바꾸거나 책 제목을 확인해 보세요.</string>
     <string name="search_loading_format">‘%1$s’ 검색 중</string>
     <string name="search_query_format">‘%1$s’</string>
-    <string name="search_result_count_format">표시된 도서 %1$d권</string>
+    <string name="search_result_count_format">검색 결과 %1$d권</string>
     <string name="sort_accuracy">정확도순</string>
     <string name="sort_latest">발간일순</string>
 

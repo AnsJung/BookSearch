@@ -24,7 +24,7 @@ class KakaoBookApiIntegrationTest {
             client = application.koin.get<HttpClient>()
             val searchBooks = application.koin.get<SearchBooksUseCase>()
 
-            val books = searchBooks(query = " 해리 포터 ", sort = BookSort.ACCURACY)
+            val books = searchBooks(query = " 해리 포터 ", sort = BookSort.ACCURACY, page = 1, size = 20).books
 
             // 서버 데이터는 바뀔 수 있으므로 특정 도서나 정확한 건수를 고정하지 않는다.
             assertTrue(books.isNotEmpty(), "잘 알려진 검색어의 실제 검색 결과가 비어 있습니다.")

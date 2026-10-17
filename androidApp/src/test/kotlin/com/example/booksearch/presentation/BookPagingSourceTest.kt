@@ -1,14 +1,14 @@
 package com.example.booksearch.presentation
 
 import androidx.paging.PagingSource
+import com.example.booksearch.data.paging.BookPagingSource
 import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSearchException
 import com.example.booksearch.domain.model.BookSearchFailure
 import com.example.booksearch.domain.model.BookSearchPage
 import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.domain.repository.BookRepository
-import com.example.booksearch.domain.usecase.SearchBooksPageUseCase
-import com.example.booksearch.presentation.search.BookPagingSource
+import com.example.booksearch.domain.usecase.SearchBooksUseCase
 import com.example.booksearch.presentation.search.toSearchError
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -23,7 +23,7 @@ class BookPagingSourceTest {
         val repository = FakeRepository { page ->
             BookSearchPage(listOf(book()), isEnd = page == 2)
         }
-        val source = BookPagingSource(SearchBooksPageUseCase(repository), "책", BookSort.ACCURACY)
+        val source = BookPagingSource(SearchBooksUseCase(repository), "책", BookSort.ACCURACY)
 
         val first = source.load(refresh(null)) as PagingSource.LoadResult.Page
         val second = source.load(append(2)) as PagingSource.LoadResult.Page
@@ -40,7 +40,7 @@ class BookPagingSourceTest {
     fun failureBecomesLoadResultErrorForComposeLoadState() = runTest {
         val failure = BookSearchException(BookSearchFailure.NETWORK)
         val repository = FakeRepository { throw failure }
-        val source = BookPagingSource(SearchBooksPageUseCase(repository), "책", BookSort.ACCURACY)
+        val source = BookPagingSource(SearchBooksUseCase(repository), "책", BookSort.ACCURACY)
 
         val result = source.load(refresh(null))
 

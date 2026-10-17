@@ -10,5 +10,6 @@ data class BookSearchUiState(
     val submittedQuery: String? = null,
     val sort: BookSort = BookSort.ACCURACY,
     val requestId: Long = 0L,
+    val totalCount: Int? = null,
     val queryErrorMessage: String? = null,
 )

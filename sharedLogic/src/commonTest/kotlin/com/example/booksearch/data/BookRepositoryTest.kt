@@ -80,6 +80,7 @@ class BookRepositoryTest {
                 .searchByTitlePage("책", BookSort.ACCURACY, page = 2, size = 20)
             assertEquals(listOf("다음 책"), page.books.map { it.title })
             assertEquals(false, page.isEnd)
+            assertEquals(40, page.totalCount)
         } finally {
             client.close()
             engine.close()

@@ -11,7 +11,12 @@ struct iOSApp: App {
         ) as? String, !apiKey.isEmpty else {
             fatalError("KAKAO_REST_API_KEY 설정이 필요합니다.")
         }
-        KoinInitializerKt.doInitKoin(apiKey: apiKey)
+        #if DEBUG
+        let enableHttpLogging = true
+        #else
+        let enableHttpLogging = false
+        #endif
+        KoinInitializerKt.doInitKoin(apiKey: apiKey, enableHttpLogging: enableHttpLogging)
         searchBooksUseCase = SearchBooksUseCaseProvider().searchBooksUseCase
     }
     var body: some Scene {

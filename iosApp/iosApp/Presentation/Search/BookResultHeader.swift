@@ -6,7 +6,7 @@ struct BookResultHeader: View {
     
     // MARK: - 검색 결과·정렬 상태
     let query: String
-    let resultCount: Int
+    let resultCount: Int?
     let sort: BookSort
     let onSortChanged: (BookSort) -> Void
     @State private var isMenuOpen = false
@@ -20,10 +20,12 @@ struct BookResultHeader: View {
                     .foregroundStyle(BookColors.textPrimary)
                     .lineLimit(1)
                     .layoutPriority(1)
-                Text("표시된 도서 \(resultCount)권")
-                    .bookTextStyle(.bodySmall)
-                    .foregroundStyle(BookColors.textSecondary)
-                    .lineLimit(1)
+                if let resultCount {
+                    Text("검색 결과 \(resultCount)권")
+                        .bookTextStyle(.bodySmall)
+                        .foregroundStyle(BookColors.textSecondary)
+                        .lineLimit(1)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 

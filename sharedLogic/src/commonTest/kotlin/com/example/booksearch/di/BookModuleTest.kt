@@ -2,8 +2,8 @@ package com.example.booksearch.di
 
 import com.example.booksearch.data.remote.KakaoBookApi
 import com.example.booksearch.data.repository.BookRepositoryImpl
-import com.example.booksearch.domain.repository.BookRepository
 import com.example.booksearch.domain.usecase.SearchBooksUseCase
+import com.example.booksearch.domain.repository.BookRepository
 import io.ktor.client.HttpClient
 import org.koin.core.component.KoinComponent
 import org.koin.core.context.stopKoin

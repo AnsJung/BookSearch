@@ -5,6 +5,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.headersOf
@@ -15,9 +16,57 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class KakaoBookApiTest {
+    @Test
+    fun loggingIsDisabledByDefault() = runTest {
+        val messages = mutableListOf<String>()
+        val engine = MockEngine { respond(EMPTY_RESPONSE, headers = JSON_HEADERS) }
+        val client = HttpClient(engine) {
+            configureBookClient(
+                apiKey = "test-key",
+                httpLogger = object : Logger {
+                    override fun log(message: String) { messages += message }
+                },
+            )
+        }
+        try {
+            KakaoBookApi(client).searchBooks("책", BookSort.ACCURACY)
+            assertTrue(messages.isEmpty())
+        } finally {
+            client.close()
+            engine.close()
+        }
+    }
+
+    @Test
+    fun debugLoggingIncludesResponseButMasksAuthorization() = runTest {
+        val messages = mutableListOf<String>()
+        val engine = MockEngine { respond(EMPTY_RESPONSE, headers = JSON_HEADERS) }
+        val client = HttpClient(engine) {
+            configureBookClient(
+                apiKey = "test-key",
+                enableHttpLogging = true,
+                httpLogger = object : Logger {
+                    override fun log(message: String) { messages += message }
+                },
+            )
+        }
+        try {
+            KakaoBookApi(client).searchBooks("책", BookSort.ACCURACY)
+            assertTrue(messages.any { it.contains("Authorization", ignoreCase = true) })
+            assertTrue(messages.any { it.contains("***") })
+            assertTrue(messages.any { it.contains("total_count") })
+            assertFalse(messages.any { it.contains("test-key") })
+        } finally {
+            client.close()
+            engine.close()
+        }
+    }
+
     @Test
     fun sendsGetWithAuthorizationAndSafelyEncodedQuery() = runTest {
         var calls = 0

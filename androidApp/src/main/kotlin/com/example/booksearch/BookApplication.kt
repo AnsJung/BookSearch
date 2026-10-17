@@ -8,7 +8,7 @@ import org.koin.core.context.loadKoinModules
 class BookApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        initKoin(BuildConfig.KAKAO_REST_API_KEY)
+        initKoin(BuildConfig.KAKAO_REST_API_KEY, enableHttpLogging = BuildConfig.DEBUG)
         loadKoinModules(presentationModule)
     }
 }

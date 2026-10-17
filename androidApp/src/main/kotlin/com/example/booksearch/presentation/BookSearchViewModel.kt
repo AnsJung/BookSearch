@@ -6,11 +6,11 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.example.booksearch.data.paging.BookPagingSource
 import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSort
-import com.example.booksearch.domain.usecase.SearchBooksPageUseCase
+import com.example.booksearch.domain.usecase.SearchBooksUseCase
 import com.example.booksearch.presentation.model.BookSearchUiState
-import com.example.booksearch.presentation.search.BookPagingSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +19,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookSearchViewModel(
-    private val searchBooksPage: SearchBooksPageUseCase,
+    private val searchBooksPage: SearchBooksUseCase,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(BookSearchUiState())
     val uiState: StateFlow<BookSearchUiState> = _uiState.asStateFlow()
@@ -42,7 +43,13 @@ class BookSearchViewModel(
                     enablePlaceholders = false,
                 ),
                 pagingSourceFactory = {
-                    BookPagingSource(searchBooksPage, request.query, request.sort)
+                    BookPagingSource(searchBooksPage, request.query, request.sort) { count ->
+                        viewModelScope.launch {
+                            _uiState.update { state ->
+                                if (state.requestId == request.id) state.copy(totalCount = count) else state
+                            }
+                        }
+                    }
                 },
             ).flow
         }
@@ -74,7 +81,9 @@ class BookSearchViewModel(
             return
         }
         val requestId = ++nextRequestId
-        _uiState.update { it.copy(submittedQuery = query, requestId = requestId, queryErrorMessage = null) }
+        _uiState.update {
+            it.copy(submittedQuery = query, requestId = requestId, totalCount = null, queryErrorMessage = null)
+        }
         searchRequests.value = SearchRequest(query, sort, requestId)
     }
 

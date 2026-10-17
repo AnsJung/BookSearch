@@ -102,7 +102,7 @@ struct BookSearchScreen: View {
         VStack(spacing: 0) {
             BookResultHeader(
                 query: model.submittedQuery ?? "",
-                resultCount: model.books.count,
+                resultCount: model.totalCount,
                 sort: model.sort,
                 onSortChanged: model.onSortChanged
             )
@@ -114,6 +114,28 @@ struct BookSearchScreen: View {
                         BookResultRow(book: book) {
                             navigationPath.append(index)
                         }
+                        .onAppear { model.onBookAppeared(at: index) }
+                    }
+
+                    if model.isAppending {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 24)
+                    } else if let message = model.appendErrorMessage {
+                        VStack(spacing: 8) {
+                            Text(message)
+                                .bookTextStyle(.bodyMedium)
+                                .foregroundStyle(BookColors.textSecondary)
+                                .multilineTextAlignment(.center)
+
+                            if model.canRetryAppend {
+                                Button("다시 시도", action: model.retryAppend)
+                                    .buttonStyle(BookOutlineButtonStyle())
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 20)
                     }
                 }
             }

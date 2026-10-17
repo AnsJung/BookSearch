@@ -6,10 +6,11 @@ import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSearchPage
 import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.domain.repository.BookRepository
-import com.example.booksearch.domain.usecase.SearchBooksPageUseCase
+import com.example.booksearch.domain.usecase.SearchBooksUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -30,24 +31,26 @@ class BookSearchViewModelSearchTest {
     @Test
     fun scrollingLoadsTheNextKakaoPage() = runTest {
         val repository = RecordingRepository()
-        val viewModel = BookSearchViewModel(SearchBooksPageUseCase(repository))
+        val viewModel = BookSearchViewModel(SearchBooksUseCase(repository))
         store.put("search", viewModel)
         viewModel.onQueryChanged(" 코틀린 ")
         viewModel.search()
 
         val books = viewModel.books.asSnapshot { scrollTo(index = 19) }
+        advanceUntilIdle()
 
         assertEquals((1..22).map { "책 $it" }, books.map(Book::title))
         assertEquals(listOf(1, 2), repository.requests.map(Request::page))
         assertEquals(listOf(20, 20), repository.requests.map(Request::size))
         assertEquals("코틀린", repository.requests.first().query)
         assertEquals("코틀린", viewModel.uiState.value.submittedQuery)
+        assertEquals(220, viewModel.uiState.value.totalCount)
     }
 
     @Test
     fun changingSortUsesSubmittedQueryAndPreservesNewInput() = runTest {
         val repository = RecordingRepository()
-        val viewModel = BookSearchViewModel(SearchBooksPageUseCase(repository))
+        val viewModel = BookSearchViewModel(SearchBooksUseCase(repository))
         store.put("search", viewModel)
         viewModel.onQueryChanged("코틀린")
         viewModel.search()
@@ -66,7 +69,7 @@ class BookSearchViewModelSearchTest {
     @Test
     fun blankQueryKeepsPreviousSearchAndShowsDismissibleDialog() = runTest {
         val repository = RecordingRepository()
-        val viewModel = BookSearchViewModel(SearchBooksPageUseCase(repository))
+        val viewModel = BookSearchViewModel(SearchBooksUseCase(repository))
         store.put("search", viewModel)
         viewModel.onQueryChanged("코틀린")
         viewModel.search()
@@ -95,8 +98,8 @@ class BookSearchViewModelSearchTest {
         ): BookSearchPage {
             requests += Request(query, sort, page, size)
             return when (page) {
-                1 -> BookSearchPage((1..20).map { book(it) }, isEnd = false)
-                2 -> BookSearchPage((21..22).map { book(it) }, isEnd = true)
+                1 -> BookSearchPage((1..20).map { book(it) }, isEnd = false, totalCount = 220)
+                2 -> BookSearchPage((21..22).map { book(it) }, isEnd = true, totalCount = 220)
                 else -> error("예상하지 못한 페이지: $page")
             }
         }

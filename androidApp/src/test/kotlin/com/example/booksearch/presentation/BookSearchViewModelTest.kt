@@ -4,7 +4,7 @@ import com.example.booksearch.domain.model.Book
 import com.example.booksearch.domain.model.BookSearchPage
 import com.example.booksearch.domain.model.BookSort
 import com.example.booksearch.domain.repository.BookRepository
-import com.example.booksearch.domain.usecase.SearchBooksPageUseCase
+import com.example.booksearch.domain.usecase.SearchBooksUseCase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -13,7 +13,7 @@ class BookSearchViewModelTest {
     @Test
     fun typingPreservesRawInputWithoutSubmittingASearch() {
         val repository = RecordingBookRepository()
-        val viewModel = BookSearchViewModel(SearchBooksPageUseCase(repository))
+        val viewModel = BookSearchViewModel(SearchBooksUseCase(repository))
 
         // 조합 중인 글자와 공백도 입력 단계에서는 그대로 유지해야 한다.
         for (input in listOf("ㅎ", "해", " 해리 포터 ", "   ", "")) {
