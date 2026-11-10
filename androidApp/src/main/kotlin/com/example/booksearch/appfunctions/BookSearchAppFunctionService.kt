@@ -16,31 +16,31 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.coroutines.cancellation.CancellationException
 
-/** A book from the public Kakao catalog that matches a title search. */
+/** 카카오 공개 도서 검색 결과에서 외부 호출자에게 전달할 책 정보다. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
 data class AppFunctionBook(
-    /** The book title. */
+    /** 도서 제목이다. */
     val title: String,
-    /** The authors listed for the book. */
+    /** 저자 목록이다. */
     val authors: List<String>,
-    /** The publisher name. */
+    /** 출판사 이름이다. */
     val publisher: String,
-    /** The ISBN supplied by Kakao. */
+    /** 카카오가 제공한 ISBN이다. */
     val isbn: String,
-    /** A public page with more information about the book. */
+    /** 책의 추가 정보를 확인할 수 있는 공개 페이지 주소다. */
     val url: String,
 )
 
-/** The first page of a title search and the total number of matching books. */
+/** 제목 검색의 첫 페이지 목록과 전체 검색 결과 수를 함께 전달한다. */
 @AppFunctionSerializable(isDescribedByKDoc = true)
 data class AppFunctionBookSearchResult(
-    /** The total number of matches reported by Kakao, when available. */
+    /** 카카오가 제공한 전체 검색 결과 수이며, 제공되지 않을 수 있다. */
     val totalCount: Int?,
-    /** Up to 20 books from the first page, in accuracy order. */
+    /** 정확도순 첫 페이지에서 가져온 최대 20권이다. */
     val books: List<AppFunctionBook>,
 )
 
-/** Exposes the existing book search use case to Android AppFunctions callers. */
+/** 기존 도서 검색 유스케이스를 Android AppFunctions 호출에 연결한다. */
 @RequiresApi(36)
 @AppFunctionServiceEntryPoint(
     serviceName = "BookSearchAppFunctionService",
@@ -50,10 +50,10 @@ abstract class BaseBookSearchAppFunctionService : AppFunctionService(), KoinComp
     private val searchBooks: SearchBooksUseCase by inject()
 
     /**
-     * Searches the public Kakao book catalog by book title and returns the first 20 matches.
-     * An empty result means no books matched the title.
+     * 카카오 공개 도서 목록을 제목으로 검색하고 첫 페이지의 책을 최대 20권 반환한다.
+     * 일치하는 책이 없으면 빈 목록을 반환한다.
      *
-     * @param title The book title or title phrase to search for.
+     * @param title 검색할 도서 제목 또는 제목의 일부
      */
     @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun searchBooksByTitle(title: String): AppFunctionBookSearchResult =
