@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 앱의 검색 범위와 반환 제한을 외부 호출자에게 설명한다. -->
+<AppFunctionAppMetadata xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
+    appfn:instructions="BookSearch searches the public Kakao book catalog by title. Use searchBooksByTitle to return up to 20 books from the first page and the total result count. This app does not search or modify a personal bookshelf." />

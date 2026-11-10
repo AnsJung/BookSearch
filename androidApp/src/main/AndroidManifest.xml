@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -10,6 +11,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <service
+            android:name="com.example.booksearch.appfunctions.BookSearchAppFunctionService"
+            android:permission="android.permission.BIND_APP_FUNCTION_SERVICE"
+            android:exported="true"
+            tools:targetApi="36">
+            <!-- AppFunctions 메타데이터의 XML 형식을 정의하는 스키마 파일이다. -->
+            <property
+                android:name="android.app.appfunctions.schema"
+                android:value="app_functions_schema.xsd" />
+            <!-- KSP가 생성한 함수 목록과 입출력 정의 파일을 가리킨다. -->
+            <property
+                android:name="android.app.appfunctions.v2"
+                android:value="book_search_app_function_service.xml" />
+            <intent-filter>
+                <action android:name="android.app.appfunctions.AppFunctionService" />
+            </intent-filter>
+        </service>
+        <!-- 외부 호출자에게 제공할 앱 전체 안내 문구를 연결한다. -->
+        <property
+            android:name="android.app.appfunctions.app_metadata"
+            android:resource="@xml/app_metadata" />
         <activity
             android:exported="true"
             android:name=".presentation.MainActivity">

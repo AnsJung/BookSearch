@@ -31,6 +31,17 @@ Presentation은 플랫폼별로 구현하고, Domain과 Data는 공통 코드로
 - **도서 상세 정보**: 목록에서 선택한 책의 소개, 출판사, 출간일, ISBN 등을 확인합니다.
 - **화면 상태 처리**: 로딩, 검색 결과 없음, 오류 상태와 재시도를 제공합니다.
 
+## Android AppFunctions
+
+Android에서는 `searchBooksByTitle(title)` 함수를 외부 에이전트에 제공합니다. 카카오 도서 검색의 정확도순 첫 페이지(최대 20권)를 반환하며, 개인 서재 데이터는 다루지 않습니다. Android 16 이상에서 사용할 수 있습니다.
+
+Android 17 이상 기기에서는 다음 명령으로 등록과 호출을 확인할 수 있습니다. [AppFunctions 테스트 가이드](https://developer.android.com/ai/appfunctions/add-appfunctions#verify-appfunction-integration)
+
+```sh
+adb shell cmd app_function list-app-functions --package com.example.booksearch
+adb shell "cmd app_function execute-app-function --package com.example.booksearch --function 'com.example.booksearch.appfunctions.BaseBookSearchAppFunctionService#searchBooksByTitle' --parameters '{\"title\":\"Kotlin\"}'"
+```
+
 ## 디자인
 
 피그마 에이전트 & GPT를 사용하여 디자인 설계 및 반영
