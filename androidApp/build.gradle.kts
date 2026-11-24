@@ -7,14 +7,17 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-val localConfig = Properties().apply {
-    rootProject.file("local.properties")
-        .inputStream()
-        .use { load(it) }
+val bookSearchCi = providers.gradleProperty("bookSearchCi").orNull == "true"
+val kakaoApiKey = if (bookSearchCi) {
+    "ci-build-only"
+} else {
+    val localProperties = rootProject.layout.projectDirectory.file("local.properties")
+    val localConfig = Properties().apply {
+        providers.fileContents(localProperties).asBytes.orNull?.inputStream()?.use { load(it) }
+    }
+    localConfig.getProperty("KAKAO_REST_API_KEY")?.takeIf { it.isNotBlank() }
+        ?: error("local.properties에 KAKAO_REST_API_KEY를 추가해 주세요.")
 }
-
-val kakaoApiKey = localConfig.getProperty("KAKAO_REST_API_KEY")
-    ?: error("local.properties에 KAKAO_REST_API_KEY를 추가해 주세요.")
 
 kotlin {
     compilerOptions {
