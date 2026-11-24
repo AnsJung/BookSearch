@@ -22,6 +22,26 @@ Kotlin Multiplatform으로 비즈니스 로직과 데이터 처리를 공유하�
 
 Presentation은 플랫폼별로 구현하고, Domain과 Data는 공통 코드로 구성합니다.
 
+## 빌드 설정
+
+로컬에서 카카오 도서 검색을 사용하려면 Android는 루트의 `local.properties`에, iOS는 `iosApp/Configuration/Secrets.xcconfig`에 `KAKAO_REST_API_KEY`를 설정합니다. 두 파일은 Git에서 제외합니다.
+
+CI에서는 실제 키 대신 빌드 검증용 값 `ci-build-only`를 사용합니다. 이 값으로 만든 앱은 실제 카카오 검색을 검증하는 용도로 쓰지 않습니다.
+
+**Android**
+
+```sh
+./gradlew :androidApp:assembleDebug -PbookSearchCi=true
+```
+
+**iOS**
+
+```sh
+ORG_GRADLE_PROJECT_bookSearchCi=true xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Debug \
+  -destination 'generic/platform=iOS Simulator' \
+  ARCHS=arm64 CODE_SIGNING_ALLOWED=NO KAKAO_REST_API_KEY=ci-build-only build
+```
+
 ## 주요 기능
 
 초기 구현 범위입니다.
