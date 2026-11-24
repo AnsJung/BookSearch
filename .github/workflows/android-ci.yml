@@ -1,0 +1,67 @@
+name: 공통 테스트 및 Android 빌드 검사
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  android-ci:
+    name: 공통·Android 테스트 및 빌드
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      ORG_GRADLE_PROJECT_bookSearchCi: 'true'
+    steps:
+      - name: 저장소 코드 가져오기
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: JDK 17 및 Gradle 캐시 설정
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: 공통 모듈 테스트 실행
+        run: >-
+          ./gradlew --console=plain -PrunKakaoIntegrationTest=false
+          :sharedLogic:testAndroidHostTest --rerun
+          :sharedUI:testAndroidHostTest --rerun
+
+      - name: Android 단위 테스트 실행
+        run: ./gradlew --console=plain :androidApp:testDebugUnitTest --rerun
+
+      - name: 테스트 결과 확인
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          reports = {
+              "sharedLogic": "testAndroidHostTest",
+              "sharedUI": "testAndroidHostTest",
+              "androidApp": "testDebugUnitTest",
+          }
+          for module, task in reports.items():
+              directory = Path(module) / "build/test-results" / task
+              suites = [ElementTree.parse(path).getroot() for path in directory.glob("TEST-*.xml")]
+              counts = {key: sum(int(suite.get(key, "0")) for suite in suites)
+                        for key in ("tests", "failures", "errors", "skipped")}
+              executed = counts["tests"] - counts["skipped"]
+              print(f"{module}: 실행={executed}, 실패={counts['failures']}, 오류={counts['errors']}, 건너뜀={counts['skipped']}")
+              if executed == 0 or counts["failures"] or counts["errors"]:
+                  raise SystemExit(f"{module}: 테스트 실행 결과를 확인해 주세요.")
+              if any(suite.get("name", "").endswith(".KakaoBookApiIntegrationTest") for suite in suites):
+                  raise SystemExit("PR에서는 실제 카카오 API 통합 테스트를 실행하지 않습니다.")
+          print("실제 카카오 API 통합 테스트 실행 건수: 0")
+          PY
+
+      - name: Android 디버그 APK 빌드
+        run: |
+          ./gradlew --console=plain :androidApp:assembleDebug
+          apk=androidApp/build/outputs/apk/debug/androidApp-debug.apk
+          test -s "$apk"
+          ls -lh "$apk"
